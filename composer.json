@@ -1,0 +1,11 @@
+{
+    "name": "bescms/barangay-system",
+    "description": "Barangay e-Services and Certificate Management System",
+    "type": "project",
+    "require": {
+        "firebase/php-jwt": "^7.0"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
