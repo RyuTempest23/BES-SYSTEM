@@ -17,29 +17,38 @@ try {
 
     // ---------- LIST RESIDENTS (GET) ----------
     if ($action === 'list' && $method === 'GET') {
-        $page = (int)($_GET['page'] ?? 1);
-        $limit = (int)($_GET['limit'] ?? 10);
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $limit = max(1, (int)($_GET['limit'] ?? 10));
         $offset = ($page - 1) * $limit;
-        $search = $_GET['search'] ?? '';
+        $search = trim($_GET['search'] ?? '');
 
+        // Build base query
         $query = "SELECT * FROM residents WHERE 1=1";
         $params = [];
-        if ($search) {
+
+        if ($search !== '') {
             $query .= " AND full_name LIKE ?";
             $params[] = "%$search%";
         }
 
-        // Get total count
-        $countStmt = $pdo->prepare($query);
+        // Get total count (separate query for reliability)
+        $countQuery = str_replace("SELECT *", "SELECT COUNT(*) as total", $query);
+        $countStmt = $pdo->prepare($countQuery);
         $countStmt->execute($params);
-        $total = $countStmt->rowCount();
+        $total = $countStmt->fetch()['total'];
 
+        // Add order and pagination
         $query .= " ORDER BY id DESC LIMIT ? OFFSET ?";
         $params[] = $limit;
         $params[] = $offset;
 
         $stmt = $pdo->prepare($query);
-        $stmt->execute($params);
+        // Bind limit and offset as integers to avoid quoting
+        foreach ($params as $key => $value) {
+            $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+            $stmt->bindValue($key + 1, $value, $paramType);
+        }
+        $stmt->execute();
         $residents = $stmt->fetchAll();
 
         jsonResponse([
@@ -81,6 +90,7 @@ try {
     }
 
     // ---------- EDIT RESIDENT (PUT) ----------
+    // ---------- EDIT RESIDENT (PUT) ----------
     if ($action === 'edit' && $method === 'PUT') {
         $data = json_decode(file_get_contents('php://input'), true);
         if (empty($data['id'])) {
@@ -99,8 +109,9 @@ try {
         if (empty($fields)) {
             jsonResponse(['error' => 'No fields to update'], 400);
         }
-        $params[] = $data['id'];
-        $params[] = $user['email']; // last_updated_by
+        // Append last_updated_by and id in the correct order
+        $params[] = $user['email'];        // for last_updated_by = ?
+        $params[] = $data['id'];           // for WHERE id = ?
 
         $sql = "UPDATE residents SET " . implode(', ', $fields) . ", last_updated_by = ? WHERE id = ?";
         $stmt = $pdo->prepare($sql);
