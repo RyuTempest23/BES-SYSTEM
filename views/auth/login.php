@@ -13,20 +13,32 @@
         
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('/BeSCMS/assets/images/bg1.png');
+            background-size: 100% auto;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        
+
         .container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 450px;
+            display: flex;
+            width: 85%;
+            max-width: 1100px;
+            justify-content: center;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo img {
+            width: 150px;
+            height: auto;
         }
         
         .logo {
@@ -127,19 +139,62 @@
         .register-link a:hover {
             text-decoration: underline;
         }
+
+        /* New form card and text group styles to ensure form-group rules apply */
+        .form-card {
+            background: #fff;
+            padding: 28px 32px;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .text-group h1 {
+            color: #1877f2;
+            font-size: 2.4rem;
+            margin: 0 0 6px 0;
+        }
+
+        .text-group p {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            color: #333;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        .logo img {
+            max-width: 140px;
+            height: auto;
+        }
+
+        .forgot-password {
+            display: block;
+            margin: 15px 0;
+            color: #1877f2;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">
-            <img src="assets/images/polog1.png" alt="Barangay Logo" onerror="this.style.display='none'">
-            <h1>BeSCMS</h1>
-            <p>Barangay e-Services</p>
+            <img src="/BeSCMS/assets/images/polog1.png" alt="Barangay Logo"> <!-- onerror="this.style.display='none' -->
+            <div class="text-group">
+                <h1>Brgy. Polo</h1>
+                <p>Dapitan, Zamboanga del Norte</p>
+            </div>
         </div>
         
-        <div id="message" class="message"></div>
-        
-        <form id="loginForm">
+        <form id="loginForm" class="form-card">
+            <div id="message" class="message"></div>
             <div class="form-group">
                 <label>Email Address</label>
                 <input type="email" id="email" required placeholder="Enter your email">
@@ -151,11 +206,9 @@
             </div>
             
             <button type="submit" id="submitBtn">Login</button>
+            <a class="forgot-password" href="#">Forgot password?</a><hr>
+            <a class="register-link" href="signup.php">Create new account</a>
         </form>
-        
-        <div class="register-link">
-            Don't have an account? <a href="signup.php">Register here</a>
-        </div>
     </div>
     
     <script>
