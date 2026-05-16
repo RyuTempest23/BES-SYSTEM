@@ -17,61 +17,72 @@
     <div id="users-list">Loading...</div>
     <br><button onclick="logout()">Logout</button>
 
-    <script>
-        const token = localStorage.getItem('token');
-        if (!token) window.location.href = '/BeSCMS/views/auth/login.php';
+<script>
+    const API_BASE = '/BeSCMS';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/BeSCMS/views/auth/login.php';
 
-        async function loadPending() {
-            const res = await fetch('/BeSCMS/admin?action=pending_verifications', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (!data.success) {
-                document.getElementById('users-list').innerHTML = '<p>Error loading data.</p>';
-                return;
-            }
-            if (data.data.length === 0) {
-                document.getElementById('users-list').innerHTML = '<p>No pending verifications.</p>';
-                return;
-            }
-            let html = '<table><tr><th>Name</th><th>Email</th><th>Uploaded ID</th><th>Action</th></tr>';
-            data.data.forEach(user => {
-                const idPath = user.verification_doc ? `/BeSCMS/uploads/${user.verification_doc}` : '';
-                html += `<tr>
-                    <td>${user.full_name}</td>
-                    <td>${user.email}</td>
-                    <td>${idPath ? `<a href="${idPath}" target="_blank">View ID</a>` : 'No ID'}</td>
-                    <td>
-                        <button class="approve" onclick="verify(${user.id}, 'approve')">Approve</button>
-                        <button class="reject" onclick="verify(${user.id}, 'reject')">Reject</button>
-                    </td>
-                </tr>`;
-            });
-            html += '</table>';
-            document.getElementById('users-list').innerHTML = html;
+    async function loadPending() {
+        const res = await fetch(`${API_BASE}/index.php?route=admin&action=pending_verifications`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success) {
+            document.getElementById('users-list').innerHTML = '<p>Error loading data.</p>';
+            return;
         }
-
-        async function verify(userId, decision) {
-            const res = await fetch('/BeSCMS/admin?action=verify_account', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ user_id: userId, decision: decision })
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert(`Account ${decision}d.`);
-                loadPending();
-            } else {
-                alert('Error: ' + data.error);
-            }
+        if (data.data.length === 0) {
+            document.getElementById('users-list').innerHTML = '<p>No pending verifications.</p>';
+            return;
         }
+        let html = '<table><tr><th>Name</th><th>Email</th><th>Uploaded ID</th><th>Action</th></tr>';
+        data.data.forEach(user => {
+            const idPath = user.verification_doc ? `/BeSCMS/uploads/${user.verification_doc}` : '';
+            html += `<tr>
+                <td>${escapeHtml(user.full_name)}</td>
+                <td>${escapeHtml(user.email)}</td>
+                <td>${idPath ? `<a href="${idPath}" target="_blank">View ID</a>` : 'No ID'}</td>
+                <td>
+                    <button class="approve" onclick="verify(${user.id}, 'approve')">Approve</button>
+                    <button class="reject" onclick="verify(${user.id}, 'reject')">Reject</button>
+                </td>
+            </tr>`;
+        });
+        html += '</table>';
+        document.getElementById('users-list').innerHTML = html;
+    }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = '/BeSCMS/views/auth/login.php';
+    async function verify(userId, decision) {
+        const res = await fetch(`${API_BASE}/index.php?route=admin&action=verify_account`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ user_id: userId, decision: decision })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(`Account ${decision}d.`);
+            loadPending();
+        } else {
+            alert('Error: ' + data.error);
         }
+    }
 
-        loadPending();
-    </script>
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/BeSCMS/views/auth/login.php';
+    }
+
+    loadPending();
+</script>
 </body>
 </html>

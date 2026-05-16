@@ -76,6 +76,17 @@
             <div class="flex flex-col lg:flex-row p-6 gap-6">
                 <!-- CENTRAL CONTENT -->
                 <div class="flex-1 space-y-6">
+                    <!-- Verification Status & Upload Button -->
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100" id="verificationCard">
+                        <h2 class="text-xl font-bold text-gray-800">🔐 Account Verification</h2>
+                        <div id="verificationStatus" class="mt-2 text-sm"></div>
+                        <div class="mt-4">
+                            <a href="upload_id.php" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm transition">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i> Upload Government ID
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Certification Request CARD (only shown if verified) -->
                     <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100" id="requestCard">
                         <h2 class="text-xl font-bold text-gray-800">📄 Certification Request</h2>
@@ -157,50 +168,64 @@
     </div>
 
     <script>
-        // Check authentication
+        const API_BASE = '/BeSCMS';
         const token = localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token || !user.id) {
             window.location.href = '/BeSCMS/views/auth/login.php';
         }
 
-        // Fill sidebar & user info
-        function updateSidebar() {
-            const status = user.verification_status || 'Pending';
-            let statusColor = 'bg-yellow-100 text-yellow-800';
-            if (status === 'Verified') statusColor = 'bg-green-100 text-green-800';
-            else if (status === 'Verifying') statusColor = 'bg-blue-100 text-blue-800';
-            document.getElementById('userSidebarInfo').innerHTML = `
+        // Map backend verification_status to display text
+        let statusText = 'Pending';
+        let statusColor = 'bg-yellow-100 text-yellow-800';
+        if (user.verification_status === 'approved') {
+            statusText = 'Verified';
+            statusColor = 'bg-green-100 text-green-800';
+        } else if (user.verification_status === 'pending') {
+            statusText = 'Pending';
+            statusColor = 'bg-yellow-100 text-yellow-800';
+        } else if (user.verification_status === 'rejected') {
+            statusText = 'Rejected';
+            statusColor = 'bg-red-100 text-red-800';
+        }
+
+        // Update sidebar
+        document.getElementById('userSidebarInfo').innerHTML = `
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">${(user.name?.charAt(0) || 'G').toUpperCase()}</div>
                 <div><h3 class="font-semibold text-gray-800">${user.name || 'Resident'}</h3><p class="text-xs text-gray-400">Resident</p></div>
             </div>
-            <div class="mt-3 text-xs p-2 rounded-lg ${statusColor}"><span class="font-semibold">Verification:</span> ${status}</div>
+            <div class="mt-3 text-xs p-2 rounded-lg ${statusColor}"><span class="font-semibold">Verification:</span> ${statusText}</div>
         `;
+
+        // Update verification card
+        const verificationDiv = document.getElementById('verificationStatus');
+        if (user.verification_status === 'approved') {
+            verificationDiv.innerHTML = '<i class="fas fa-check-circle text-green-600 mr-1"></i> Your account is verified. You can now request certificates.';
+        } else if (user.verification_status === 'pending') {
+            verificationDiv.innerHTML = '<i class="fas fa-clock text-yellow-600 mr-1"></i> Your ID is pending verification. Please wait for admin approval.';
+        } else if (user.verification_status === 'rejected') {
+            verificationDiv.innerHTML = '<i class="fas fa-times-circle text-red-600 mr-1"></i> Your ID was rejected. Please upload a new, clear copy.';
         }
 
-        // Handle request button visibility based on verification status
-        function updateRequestAccess() {
-            const status = user.verification_status;
-            const requestBtn = document.getElementById('requestBtn');
-            const msgSpan = document.getElementById('requestMessage');
-            if (status !== 'Verified') {
-                requestBtn.classList.add('opacity-50', 'pointer-events-none');
-                requestBtn.href = '#';
-                if (status === 'Verifying') {
-                    msgSpan.innerHTML = '⚠️ Your account is being verified. Please wait for admin approval.';
-                } else {
-                    msgSpan.innerHTML = '🔒 Please verify your account first (go to Profile → Verify).';
-                }
+        // Handle request button based on verification
+        const requestBtn = document.getElementById('requestBtn');
+        const requestMsg = document.getElementById('requestMessage');
+        if (user.verification_status !== 'approved') {
+            requestBtn.classList.add('opacity-50', 'pointer-events-none');
+            requestBtn.href = '#';
+            if (user.verification_status === 'pending') {
+                requestMsg.innerHTML = '⏳ Your account is being verified. You can request certificates once approved.';
+            } else if (user.verification_status === 'rejected') {
+                requestMsg.innerHTML = '❌ Your ID was rejected. Please upload a new ID above.';
             } else {
-                requestBtn.classList.remove('opacity-50', 'pointer-events-none');
-                requestBtn.href = 'request.php';
-                msgSpan.innerHTML = 'Request official barangay certificates quickly online';
+                requestMsg.innerHTML = '🔒 Please verify your account by uploading a valid ID above.';
             }
+        } else {
+            requestBtn.classList.remove('opacity-50', 'pointer-events-none');
+            requestBtn.href = 'request.php';
+            requestMsg.innerHTML = 'Request official barangay certificates quickly online.';
         }
-
-        updateSidebar();
-        updateRequestAccess();
 
         function logout() {
             localStorage.clear();
@@ -209,15 +234,8 @@
 
         // Carousel arrows
         const container = document.getElementById('stepCarousel');
-        document.getElementById('stepLeftBtn')?.addEventListener('click', () => container.scrollBy({
-            left: -220,
-            behavior: 'smooth'
-        }));
-        document.getElementById('stepRightBtn')?.addEventListener('click', () => container.scrollBy({
-            left: 220,
-            behavior: 'smooth'
-        }));
+        document.getElementById('stepLeftBtn')?.addEventListener('click', () => container.scrollBy({ left: -220, behavior: 'smooth' }));
+        document.getElementById('stepRightBtn')?.addEventListener('click', () => container.scrollBy({ left: 220, behavior: 'smooth' }));
     </script>
 </body>
-
 </html>
