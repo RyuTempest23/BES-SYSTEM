@@ -7,10 +7,10 @@ composer.lock
 .env
 
 # Uploaded ID documents
-/uploads/*.jpg
-/uploads/*.png
-/uploads/*.pdf
-!/uploads/.gitkeep
+# /uploads/*.jpg
+# /uploads/*.png
+# /uploads/*.pdf
+# !/uploads/.gitkeep
 
 # Logs
 *.log
