@@ -13,18 +13,20 @@
         
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('/BeSCMS/assets/images/bg1.png');
+            background-size: 100% auto;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start;
+            padding-top: 20px;
         }
         
         .container {
             background: white;
-            padding: 40px;
-            border-radius: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 500px;
@@ -33,6 +35,7 @@
         .logo {
             text-align: center;
             margin-bottom: 30px;
+            display: block;
         }
         
         .logo img {
@@ -57,7 +60,8 @@
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 5px;
+            flex-shrink: 10;
         }
         
         label {
@@ -143,7 +147,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="assets/images/polog1.png" alt="Barangay Logo" onerror="this.style.display='none'">
+            <img src="/BeSCMS/assets/images/polog1.png" alt="Barangay Logo">
             <h1>Create Account</h1>
             <p>Barangay e-Services</p>
         </div>
