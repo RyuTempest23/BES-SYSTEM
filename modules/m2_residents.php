@@ -89,7 +89,7 @@ try {
         jsonResponse(['success' => true, 'message' => 'Resident added', 'id' => $pdo->lastInsertId()], 201);
     }
 
-    // ---------- EDIT RESIDENT (PUT) ----------
+
     // ---------- EDIT RESIDENT (PUT) ----------
     if ($action === 'edit' && $method === 'PUT') {
         $data = json_decode(file_get_contents('php://input'), true);
@@ -100,18 +100,28 @@ try {
         $fields = [];
         $params = [];
         $updatable = ['full_name', 'birthdate', 'address', 'contact_number', 'registered_voter'];
+        
         foreach ($updatable as $field) {
             if (array_key_exists($field, $data)) {
+                $value = $data[$field];
+                
+                // Handle empty strings as NULL for nullable fields
+                if ($value === '' && in_array($field, ['birthdate', 'address', 'contact_number'])) {
+                    $value = null;
+                }
+                
                 $fields[] = "$field = ?";
-                $params[] = $data[$field];
+                $params[] = $value;
             }
         }
+        
         if (empty($fields)) {
             jsonResponse(['error' => 'No fields to update'], 400);
         }
-        // Append last_updated_by and id in the correct order
-        $params[] = $user['email'];        // for last_updated_by = ?
-        $params[] = $data['id'];           // for WHERE id = ?
+        
+        // Add last_updated_by (track who updated the record)
+        $params[] = $user['email'];
+        $params[] = $data['id'];
 
         $sql = "UPDATE residents SET " . implode(', ', $fields) . ", last_updated_by = ? WHERE id = ?";
         $stmt = $pdo->prepare($sql);
