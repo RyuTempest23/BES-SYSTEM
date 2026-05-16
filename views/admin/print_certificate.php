@@ -1,10 +1,8 @@
 <?php
-// No API call needed; directly fetch using token from URL parameter
 $requestId = $_GET['id'] ?? 0;
 if (!$requestId) {
     die('Invalid request ID');
 }
-// We'll use JavaScript to fetch data via API and then print
 ?>
 <!DOCTYPE html>
 <html>
@@ -32,43 +30,54 @@ if (!$requestId) {
     </div>
 
     <script>
+        const API_BASE = '/BeSCMS';
         const token = localStorage.getItem('token');
         if (!token) {
             alert('Authentication required');
-            window.location.href = '/BeSCMS/views/auth/login.php';
+            window.location.href = `${API_BASE}/views/auth/login.php`;
         }
 
         const requestId = <?php echo $requestId; ?>;
         async function loadCertificate() {
-            const res = await fetch(`/BeSCMS/admin?action=pending_requests`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (!data.success) return;
-            const request = data.data.find(r => r.id == requestId);
-            if (!request) {
-                document.getElementById('certificate').innerHTML = '<p>Request not found or already processed.</p>';
-                return;
+            try {
+                const res = await fetch(`${API_BASE}/index.php?route=admin&action=get_request&id=${requestId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+                const req = data.data;
+                const html = `
+                    <h1>Republic of the Philippines</h1>
+                    <h3>Barangay Lucero</h3>
+                    <h2>CERTIFICATE OF ${req.certificate_type.toUpperCase()}</h2>
+                    <div class="content">
+                        <p>This is to certify that <strong>${escapeHtml(req.full_name)}</strong> is a resident of this barangay.</p>
+                        <p>Purpose: ${escapeHtml(req.purpose)}</p>
+                        <p>Number of copies: ${req.quantity}</p>
+                        <p>Issued on: ${new Date().toLocaleDateString()}</p>
+                        ${req.admin_notes ? `<p><em>Note: ${escapeHtml(req.admin_notes)}</em></p>` : ''}
+                    </div>
+                    <div class="footer">
+                        <p>_________________________</p>
+                        <p>Barangay Captain</p>
+                    </div>
+                `;
+                document.getElementById('certificate').innerHTML = html;
+            } catch (err) {
+                document.getElementById('certificate').innerHTML = '<p>Error loading certificate data: ' + err.message + '</p>';
             }
-            // Also fetch resident details from profile? We already have full_name, etc.
-            const html = `
-                <h1>Republic of the Philippines</h1>
-                <h3>Barangay ${request.full_name ? 'eServices' : ''}</h3>
-                <h2>CERTIFICATE OF ${request.certificate_type.toUpperCase()}</h2>
-                <div class="content">
-                    <p>This is to certify that <strong>${request.full_name}</strong> is a resident of this barangay.</p>
-                    <p>Purpose: ${request.purpose}</p>
-                    <p>Number of copies: ${request.quantity}</p>
-                    <p>Issued on: ${new Date().toLocaleDateString()}</p>
-                    ${request.admin_notes ? `<p><em>Note: ${request.admin_notes}</em></p>` : ''}
-                </div>
-                <div class="footer">
-                    <p>_________________________</p>
-                    <p>Barangay Captain</p>
-                </div>
-            `;
-            document.getElementById('certificate').innerHTML = html;
         }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
         loadCertificate();
     </script>
 </body>

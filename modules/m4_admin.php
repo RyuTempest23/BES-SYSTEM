@@ -111,6 +111,27 @@ try {
         jsonResponse(['success' => true, 'year' => $year, 'data' => $reports]);
     }
 
+    // ---------- GET SINGLE REQUEST (for printing) ----------
+    if ($action === 'get_request' && $method === 'GET') {
+        $requestId = (int)($_GET['id'] ?? 0);
+        if (!$requestId) {
+            jsonResponse(['error' => 'Request ID required'], 400);
+        }
+        $stmt = $pdo->prepare("
+            SELECT cr.*, u.email, r.full_name, r.address 
+            FROM certificate_requests cr
+            JOIN users u ON cr.user_id = u.id
+            JOIN residents r ON u.resident_id = r.id
+            WHERE cr.id = ?
+        ");
+        $stmt->execute([$requestId]);
+        $request = $stmt->fetch();
+        if (!$request) {
+            jsonResponse(['error' => 'Request not found'], 404);
+        }
+        jsonResponse(['success' => true, 'data' => $request]);
+    }
+
     jsonResponse(['error' => 'Invalid action'], 400);
 } catch (PDOException $e) {
     jsonResponse(['error' => 'Database error: ' . $e->getMessage()], 500);
