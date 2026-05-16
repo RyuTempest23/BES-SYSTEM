@@ -1,15 +1,40 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Yearly Reports</title>
     <style>
-        body { font-family: Arial; padding: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #764ba2; color: white; }
-        select, button { padding: 8px; margin-right: 10px; }
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #764ba2;
+            color: white;
+        }
+
+        select,
+        button {
+            padding: 8px;
+            margin-right: 10px;
+        }
     </style>
 </head>
+
 <body>
     <h2>Completed Transactions Report</h2>
     <div>
@@ -31,7 +56,9 @@
         async function loadReport() {
             const year = document.getElementById('year').value;
             const res = await fetch(`/BeSCMS/admin?action=yearly_report&year=${year}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             const data = await res.json();
             if (!data.success) {
@@ -66,4 +93,5 @@
         }
     </script>
 </body>
+
 </html>

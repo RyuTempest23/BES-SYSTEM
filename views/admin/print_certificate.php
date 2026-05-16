@@ -6,22 +6,60 @@ if (!$requestId) {
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Print Certificate</title>
     <style>
-        body { font-family: 'Times New Roman', serif; padding: 40px; }
-        .certificate { border: 2px solid #333; padding: 40px; max-width: 800px; margin: auto; text-align: center; }
-        h1 { font-size: 28px; margin-bottom: 10px; }
-        h3 { margin-top: 0; }
-        .content { text-align: left; margin: 30px 0; line-height: 1.8; }
-        .footer { margin-top: 50px; text-align: right; }
-        @media print {
-            body { padding: 0; }
-            .no-print { display: none; }
+        body {
+            font-family: 'Times New Roman', serif;
+            padding: 40px;
         }
-        .no-print { text-align: center; margin-top: 20px; }
+
+        .certificate {
+            border: 2px solid #333;
+            padding: 40px;
+            max-width: 800px;
+            margin: auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+
+        .content {
+            text-align: left;
+            margin: 30px 0;
+            line-height: 1.8;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: right;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        .no-print {
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
+
 <body>
     <div id="certificate" class="certificate">Loading certificate data...</div>
     <div class="no-print">
@@ -41,7 +79,9 @@ if (!$requestId) {
         async function loadCertificate() {
             try {
                 const res = await fetch(`${API_BASE}/index.php?route=admin&action=get_request&id=${requestId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.error);
@@ -81,4 +121,5 @@ if (!$requestId) {
         loadCertificate();
     </script>
 </body>
+
 </html>

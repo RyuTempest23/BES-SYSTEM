@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             background: url('/BeSCMS/assets/images/bg1.png');
@@ -26,51 +27,55 @@
             display: flex;
             width: 85%;
             max-width: 1100px;
-            justify-content: space-between;   /* pushes logo left, form right */
+            justify-content: space-between;
+            /* pushes logo left, form right */
             align-items: center;
-            gap: 0;                          /* removed original gap, space-between handles spacing */
-            flex-wrap: wrap;                 /* ensures wrapping on narrow screens */
+            gap: 0;
+            /* removed original gap, space-between handles spacing */
+            flex-wrap: wrap;
+            /* ensures wrapping on narrow screens */
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 20px;
-            flex-shrink: 0;                  /* prevents logo from shrinking */
+            flex-shrink: 0;
+            /* prevents logo from shrinking */
         }
 
         .logo img {
             width: 150px;
             height: auto;
         }
-        
+
         .logo {
             text-align: center;
             margin-bottom: 30px;
         }
-        
+
         .logo img {
             max-width: 80px;
             height: auto;
         }
-        
+
         .logo h1 {
             color: #333;
             font-size: 24px;
             margin-top: 10px;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 5px;
             color: #555;
             font-weight: bold;
         }
-        
+
         input {
             width: 100%;
             padding: 12px;
@@ -79,12 +84,12 @@
             font-size: 16px;
             transition: border-color 0.3s;
         }
-        
+
         input:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
         button {
             width: 100%;
             padding: 12px;
@@ -97,48 +102,48 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        
+
         button:hover {
             background: #5a67d8;
         }
-        
+
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
         }
-        
+
         .message {
             padding: 12px;
             border-radius: 5px;
             margin-bottom: 20px;
             display: none;
         }
-        
+
         .message.error {
             background: #fee;
             color: #c33;
             border: 1px solid #fcc;
             display: block;
         }
-        
+
         .message.success {
             background: #efe;
             color: #3c3;
             border: 1px solid #cfc;
             display: block;
         }
-        
+
         .register-link {
             text-align: center;
             margin-top: 20px;
             color: #666;
         }
-        
+
         .register-link a {
             color: #667eea;
             text-decoration: none;
         }
-        
+
         .register-link a:hover {
             text-decoration: underline;
         }
@@ -148,11 +153,12 @@
             background: #fff;
             padding: 28px 32px;
             border-radius: 10px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
             width: 100%;
             max-width: 420px;
-            border: 1px solid rgba(0,0,0,0.06);
-            flex-shrink: 0;                  /* ensures form doesn't shrink on smaller screens */
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            flex-shrink: 0;
+            /* ensures form doesn't shrink on smaller screens */
         }
 
         .text-group h1 {
@@ -192,6 +198,7 @@
                 justify-content: center;
                 gap: 30px;
             }
+
             .form-card {
                 margin-left: auto;
                 margin-right: auto;
@@ -199,6 +206,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo">
@@ -208,48 +216,52 @@
                 <p>Dapitan, Zamboanga del Norte</p>
             </div>
         </div>
-        
+
         <form id="loginForm" class="form-card">
             <div id="message" class="message"></div>
             <div class="form-group">
                 <label>Email Address</label>
                 <input type="email" id="email" required placeholder="Enter your email">
             </div>
-            
+
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" id="password" required placeholder="Enter your password">
             </div>
-            
+
             <button type="submit" id="submitBtn">Login</button>
-            <a class="forgot-password" href="#">Forgot password?</a><hr>
+            <a class="forgot-password" href="#">Forgot password?</a>
+            <hr>
             <a class="register-link" href="signup.php">Create new account</a>
         </form>
     </div>
-    
+
     <script>
         const API_BASE = '/BeSCMS';
-        
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const submitBtn = document.getElementById('submitBtn');
             const messageDiv = document.getElementById('message');
-            
+
             // Disable button and show loading
             submitBtn.disabled = true;
             submitBtn.textContent = 'Logging in...';
             messageDiv.style.display = 'none';
-            
+
             try {
                 const response = await fetch(`${API_BASE}/index.php?route=auth&action=login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
                 });
 
                 let data = null;
@@ -258,7 +270,7 @@
                 } catch (jsonError) {
                     console.error('Invalid JSON response from login API:', jsonError);
                 }
-                
+
                 if (!response.ok) {
                     messageDiv.className = 'message error';
                     messageDiv.textContent = (data && data.error) ? data.error : `Login failed (${response.status})`;
@@ -267,17 +279,17 @@
                     submitBtn.textContent = 'Login';
                     return;
                 }
-                
+
                 if (data && data.success) {
                     // Store token and user data
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    
+
                     // Show success message
                     messageDiv.className = 'message success';
                     messageDiv.textContent = 'Login successful! Redirecting...';
                     messageDiv.style.display = 'block';
-                    
+
                     // Redirect based on role
                     setTimeout(() => {
                         if (data.user.role === 'admin') {
@@ -302,7 +314,7 @@
                 submitBtn.textContent = 'Login';
             }
         });
-        
+
         // Check if already logged in
         const token = localStorage.getItem('token');
         if (token) {
@@ -315,4 +327,5 @@
         }
     </script>
 </body>
+
 </html>

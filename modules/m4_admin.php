@@ -35,13 +35,27 @@ try {
 
     // ---------- PENDING VERIFICATIONS (for account verification) ----------
     if ($action === 'pending_verifications' && $method === 'GET') {
+        $statusFilter = $_GET['status'] ?? 'pending';
+        $validStatuses = ['pending', 'approved', 'rejected'];
+
+        if (!in_array($statusFilter, $validStatuses)) {
+            $statusFilter = 'pending';
+        }
+
+        // For 'pending', only show those with uploaded documents
+        // For 'approved' and 'rejected', show all
+        $whereClause = ($statusFilter === 'pending')
+            ? "u.verification_status = ? AND u.verification_doc IS NOT NULL"
+            : "u.verification_status = ?";
+
         $stmt = $pdo->prepare("
             SELECT u.*, r.full_name, r.address 
             FROM users u
             JOIN residents r ON u.resident_id = r.id
-            WHERE u.verification_status = 'pending' AND u.verification_doc IS NOT NULL
+            WHERE $whereClause
+            ORDER BY u.updated_at DESC
         ");
-        $stmt->execute();
+        $stmt->execute([$statusFilter]);
         $users = $stmt->fetchAll();
         jsonResponse(['success' => true, 'data' => $users]);
     }
@@ -111,6 +125,23 @@ try {
         jsonResponse(['success' => true, 'year' => $year, 'data' => $reports]);
     }
 
+    // ---------- GET USER'S ALL REQUESTS ----------
+    if ($action === 'user_requests' && $method === 'GET') {
+        $userId = (int)($_GET['user_id'] ?? 0);
+        if (!$userId) {
+            jsonResponse(['error' => 'User ID required'], 400);
+        }
+        $stmt = $pdo->prepare("
+            SELECT cr.* 
+            FROM certificate_requests cr
+            WHERE cr.user_id = ?
+            ORDER BY cr.requested_at DESC
+        ");
+        $stmt->execute([$userId]);
+        $requests = $stmt->fetchAll();
+        jsonResponse(['success' => true, 'data' => $requests]);
+    }
+
     // ---------- GET SINGLE REQUEST (for printing) ----------
     if ($action === 'get_request' && $method === 'GET') {
         $requestId = (int)($_GET['id'] ?? 0);
@@ -136,4 +167,3 @@ try {
 } catch (PDOException $e) {
     jsonResponse(['error' => 'Database error: ' . $e->getMessage()], 500);
 }
-?>

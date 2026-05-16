@@ -1,18 +1,54 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Pending Requests - Admin</title>
     <style>
-        body { font-family: Arial; padding: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #764ba2; color: white; }
-        button { padding: 5px 10px; margin: 2px; cursor: pointer; }
-        .approve { background: green; color: white; }
-        .reject { background: red; color: white; }
-        .notes { width: 200px; }
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #764ba2;
+            color: white;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 2px;
+            cursor: pointer;
+        }
+
+        .approve {
+            background: green;
+            color: white;
+        }
+
+        .reject {
+            background: red;
+            color: white;
+        }
+
+        .notes {
+            width: 200px;
+        }
     </style>
 </head>
+
 <body>
     <h2>Pending Certificate Requests</h2>
     <div id="requests-list">Loading...</div>
@@ -26,7 +62,9 @@
 
         async function loadRequests() {
             const res = await fetch(`${API_BASE}/index.php?route=admin&action=pending_requests`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             const data = await res.json();
             if (!data.success) return document.getElementById('requests-list').innerHTML = '<p>Error loading requests</p>';
@@ -57,8 +95,14 @@
             const notes = document.getElementById(`notes_${id}`).value;
             const res = await fetch(`${API_BASE}/index.php?route=admin&action=approve_request`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ request_id: id, admin_notes: notes })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    request_id: id,
+                    admin_notes: notes
+                })
             });
             const data = await res.json();
             if (data.success) {
@@ -75,8 +119,14 @@
             if (!confirm('Reject this request?')) return;
             const res = await fetch(`${API_BASE}/index.php?route=admin&action=reject_request`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ request_id: id, admin_notes: notes })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    request_id: id,
+                    admin_notes: notes
+                })
             });
             const data = await res.json();
             if (data.success) {
@@ -95,4 +145,5 @@
         loadRequests();
     </script>
 </body>
+
 </html>
