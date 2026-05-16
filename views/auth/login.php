@@ -21,19 +21,22 @@
             align-items: center;
         }
 
+        /* MODIFIED: form on the right side — justify content to space-between, removed gap, added flex-wrap for responsiveness */
         .container {
             display: flex;
             width: 85%;
             max-width: 1100px;
-            justify-content: center;
-            gap: 40px;
+            justify-content: space-between;   /* pushes logo left, form right */
             align-items: center;
+            gap: 0;                          /* removed original gap, space-between handles spacing */
+            flex-wrap: wrap;                 /* ensures wrapping on narrow screens */
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 20px;
+            flex-shrink: 0;                  /* prevents logo from shrinking */
         }
 
         .logo img {
@@ -149,6 +152,7 @@
             width: 100%;
             max-width: 420px;
             border: 1px solid rgba(0,0,0,0.06);
+            flex-shrink: 0;                  /* ensures form doesn't shrink on smaller screens */
         }
 
         .text-group h1 {
@@ -180,6 +184,18 @@
             color: #1877f2;
             text-decoration: none;
             font-size: 0.9rem;
+        }
+
+        /* optional small-screen adjustment: form will be centered when wrapped, but on large screens it stays on the right */
+        @media (max-width: 850px) {
+            .container {
+                justify-content: center;
+                gap: 30px;
+            }
+            .form-card {
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
     </style>
 </head>
