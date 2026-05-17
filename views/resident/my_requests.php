@@ -158,6 +158,8 @@
                 const statusText = capitalizeStatus(String(req.status || ''));
                 const statusClass = `status-${String(req.status || '').toLowerCase()}`;
                 const requestDate = req.requested_at || req.date || '';
+                const quantityText = req.quantity && req.quantity > 1 ? `${req.quantity} copies` : '1 copy';
+                const adminNotes = req.admin_notes ? `<div class="mt-3 text-sm text-gray-600"><span class="font-semibold">Admin note:</span> ${escapeHtml(req.admin_notes)}</div>` : '';
                 return `
                     <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition bg-white">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -167,7 +169,9 @@
                                     <span class="status-badge ${statusClass}">${statusText}</span>
                                 </div>
                                 <p class="text-gray-600 text-sm mb-1"><i class="fas fa-comment mr-1"></i> ${escapeHtml(req.purpose)}</p>
+                                <p class="text-gray-600 text-sm mb-1"><i class="fas fa-layer-group mr-1"></i> ${quantityText}</p>
                                 <p class="text-gray-400 text-xs"><i class="far fa-calendar-alt mr-1"></i> ${formatDate(requestDate)}</p>
+                                ${adminNotes}
                             </div>
                             <div class="flex gap-2">
                                 ${String(req.status).toLowerCase() === 'pending' ? `<button onclick="cancelRequest(${req.id})" class="px-4 py-2 text-sm border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"><i class="fas fa-times mr-1"></i> Cancel</button>` : ''}
