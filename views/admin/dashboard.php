@@ -386,7 +386,7 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 data = await res.json();
-                if (data.success) document.getElementById('verifyCount').innerText = data.data ? data.data.length : 0;
+                if (data.success) document.getElementById('verifyCount').innerText = typeof data.count === 'number' ? data.count : (data.data ? data.data.length : 0);
 
                 res = await fetch(`${API_BASE}/index.php?route=residents&action=list&limit=1`, {
                     headers: { 'Authorization': `Bearer ${token}` }

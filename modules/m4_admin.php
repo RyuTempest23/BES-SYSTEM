@@ -57,7 +57,7 @@ try {
         ");
         $stmt->execute([$statusFilter]);
         $users = $stmt->fetchAll();
-        jsonResponse(['success' => true, 'data' => $users]);
+        jsonResponse(['success' => true, 'count' => count($users), 'data' => $users]);
     }
 
     // ---------- APPROVE OR REJECT ACCOUNT VERIFICATION ----------

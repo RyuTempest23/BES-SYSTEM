@@ -123,6 +123,7 @@
     </div>
 
     <script>
+        const API_BASE = '/BeSCMS';
         const token = localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token || !user.id) {
@@ -134,72 +135,58 @@
         let currentFilter = 'Pending';
         let requestToCancel = null;
 
-        function loadRequests() {
-            const storageKey = `barangayRequests_${user.id}`;
-            const stored = localStorage.getItem(storageKey);
-            if (stored) {
-                currentRequests = JSON.parse(stored);
-            } else {
-                // Demo data – all statuses for testing
-                currentRequests = [{
-                        id: 1001,
-                        type: 'Barangay Clearance',
-                        purpose: 'Employment requirement',
-                        status: 'Approved',
-                        date: '2024-01-15T08:30:00.000Z',
-                        userId: user.id,
-                        userName: user.name
-                    },
-                    {
-                        id: 1002,
-                        type: 'Barangay Indigency',
-                        purpose: 'Medical assistance',
-                        status: 'Completed',
-                        date: '2024-01-10T10:15:00.000Z',
-                        userId: user.id,
-                        userName: user.name
-                    },
-                    {
-                        id: 1003,
-                        type: 'Barangay Permit',
-                        purpose: 'Food stall business',
-                        status: 'Rejected',
-                        date: '2024-01-05T14:20:00.000Z',
-                        userId: user.id,
-                        userName: user.name
+        async function loadRequests() {
+            try {
+                const statusParam = currentFilter.toLowerCase();
+                const response = await fetch(`${API_BASE}/index.php?route=requests&action=my_requests&status=${encodeURIComponent(statusParam)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                ];
-                localStorage.setItem(storageKey, JSON.stringify(currentRequests));
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    currentRequests = Array.isArray(data.data) ? data.data : [];
+                } else {
+                    currentRequests = [];
+                    console.error('Failed to load requests:', data.error || response.statusText);
+                }
+            } catch (error) {
+                currentRequests = [];
+                console.error('Error loading requests:', error);
             }
             renderRequests();
         }
 
         function renderRequests() {
-            // Filter by currentFilter (no 'all' case)
-            const filtered = currentRequests.filter(req => req.status === currentFilter);
             const container = document.getElementById('requestsContainer');
-            if (filtered.length === 0) {
+            if (!Array.isArray(currentRequests) || currentRequests.length === 0) {
                 container.innerHTML = `<div class="text-center py-12 bg-gray-50 rounded-xl"><i class="fas fa-inbox text-5xl text-gray-400 mb-3"></i><p class="text-gray-500">No ${currentFilter.toLowerCase()} requests.</p><a href="dashboard.php" class="inline-block mt-4 text-blue-600 hover:underline">Make a request →</a></div>`;
                 return;
             }
-            container.innerHTML = filtered.map(req => `
-                <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition bg-white">
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <h3 class="font-bold text-lg text-gray-800">${escapeHtml(req.type)}</h3>
-                                <span class="status-badge status-${req.status.toLowerCase()}">${req.status}</span>
+
+            container.innerHTML = currentRequests.map(req => {
+                const statusText = capitalizeStatus(String(req.status || ''));
+                const statusClass = `status-${String(req.status || '').toLowerCase()}`;
+                const requestDate = req.requested_at || req.date || '';
+                return `
+                    <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition bg-white">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h3 class="font-bold text-lg text-gray-800">${escapeHtml(req.certificate_type || req.type || '')}</h3>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
+                                </div>
+                                <p class="text-gray-600 text-sm mb-1"><i class="fas fa-comment mr-1"></i> ${escapeHtml(req.purpose)}</p>
+                                <p class="text-gray-400 text-xs"><i class="far fa-calendar-alt mr-1"></i> ${formatDate(requestDate)}</p>
                             </div>
-                            <p class="text-gray-600 text-sm mb-1"><i class="fas fa-comment mr-1"></i> ${escapeHtml(req.purpose)}</p>
-                            <p class="text-gray-400 text-xs"><i class="far fa-calendar-alt mr-1"></i> ${formatDate(req.date)}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            ${req.status === 'Pending' ? `<button onclick="cancelRequest(${req.id})" class="px-4 py-2 text-sm border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"><i class="fas fa-times mr-1"></i> Cancel</button>` : ''}
-                            ${req.status === 'Completed' ? `<button onclick="viewCertificate(${req.id})" class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"><i class="fas fa-download mr-1"></i> Download</button>` : ''}
+                            <div class="flex gap-2">
+                                ${String(req.status).toLowerCase() === 'pending' ? `<button onclick="cancelRequest(${req.id})" class="px-4 py-2 text-sm border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition"><i class="fas fa-times mr-1"></i> Cancel</button>` : ''}
+                                ${String(req.status).toLowerCase() === 'completed' ? `<button onclick="viewCertificate(${req.id})" class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition"><i class="fas fa-download mr-1"></i> Download</button>` : ''}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function escapeHtml(str) {
@@ -229,14 +216,30 @@
             requestToCancel = null;
         }
 
-        document.getElementById('confirmCancelBtn').addEventListener('click', function() {
-            if (requestToCancel) {
-                const idx = currentRequests.findIndex(r => r.id === requestToCancel);
-                if (idx !== -1 && currentRequests[idx].status === 'Pending') {
-                    currentRequests[idx].status = 'Cancelled';
-                    localStorage.setItem(`barangayRequests_${user.id}`, JSON.stringify(currentRequests));
-                    renderRequests();
+        document.getElementById('confirmCancelBtn').addEventListener('click', async function() {
+            if (!requestToCancel) {
+                closeCancelModal();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/index.php?route=requests&action=cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ request_id: requestToCancel })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Unable to cancel request');
                 }
+                await loadRequests();
+            } catch (error) {
+                console.error('Cancel request error:', error);
+                alert(`⚠️ ${error.message}`);
+            } finally {
                 closeCancelModal();
             }
         });
@@ -255,7 +258,7 @@
                 this.classList.add('filter-active');
                 this.classList.remove('bg-gray-100');
                 currentFilter = this.getAttribute('data-filter');
-                renderRequests();
+                loadRequests();
             });
         });
 
@@ -266,20 +269,31 @@
             defaultBtn.classList.remove('bg-gray-100');
         }
 
+        function normalizeVerificationStatus(status) {
+            const normalized = String(status || 'pending').trim().toLowerCase();
+            return normalized === 'verified' ? 'approved' : normalized;
+        }
+
+        function capitalizeStatus(status) {
+            return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
         function goToProfile() {
             window.location.href = 'request_form.php';
         }
 
         // Sidebar with checkmark and admin links
-        const status = user.verification_status || 'Pending';
-        const verifiedBadge = status === 'Verified' ? '<i class="fas fa-check-circle text-green-600 ml-1"></i>' : '';
+        const rawStatus = user.verification_status || 'pending';
+        const status = normalizeVerificationStatus(rawStatus);
+        const statusLabel = capitalizeStatus(status);
+        const verifiedBadge = status === 'approved' ? '<i class="fas fa-check-circle text-green-600 ml-1"></i>' : '';
         document.getElementById('sidebarUser').innerHTML = `
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">${(user.name?.charAt(0) || 'G').toUpperCase()}</div>
                 <div><h3 class="font-semibold">${user.name || 'Resident'} ${verifiedBadge}</h3><p class="text-xs text-gray-400">Resident</p></div>
             </div>
-            <div class="mt-3 text-xs p-2 rounded-lg ${status === 'Verified' ? 'bg-green-100 text-green-800' : (status === 'Verifying' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')}">
-                <span class="font-semibold">Verification:</span> ${status}
+            <div class="mt-3 text-xs p-2 rounded-lg ${status === 'approved' ? 'bg-green-100 text-green-800' : (status === 'verifying' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')}">
+                <span class="font-semibold">Verification:</span> ${statusLabel}
             </div>
         `;
 

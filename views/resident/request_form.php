@@ -131,15 +131,18 @@
         }
 
         function refreshProfileDisplay() {
-            const status = user.verification_status || 'Pending';
+            const rawStatus = user.verification_status || 'pending';
+            const status = normalizeVerificationStatus(rawStatus);
+            const statusLabel = capitalizeStatus(status);
+
             document.getElementById('profileName').innerText = user.name || 'Resident';
-            document.getElementById('verifyStatusText').innerText = status;
+            document.getElementById('verifyStatusText').innerText = statusLabel;
 
             const badge = document.getElementById('verifyBadge');
             const checkIcon = document.getElementById('verifiedCheck');
             const verifyBtn = document.getElementById('verifyAccountBtn');
 
-            if (status === 'Verified') {
+            if (status === 'approved') {
                 badge.className = 'inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full mt-2 gap-1';
                 checkIcon.classList.remove('hidden');
                 verifyBtn.style.display = 'none';
@@ -157,14 +160,14 @@
             `;
 
             // Sidebar with checkmark
-            const verifiedBadge = status === 'Verified' ? '<i class="fas fa-check-circle text-green-600 ml-1"></i>' : '';
+            const verifiedBadge = status === 'approved' ? '<i class="fas fa-check-circle text-green-600 ml-1"></i>' : '';
             document.getElementById('sidebarUser').innerHTML = `
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">${(user.name?.charAt(0) || 'G').toUpperCase()}</div>
                     <div><h3 class="font-semibold">${user.name || 'Resident'} ${verifiedBadge}</h3><p class="text-xs text-gray-400">Resident</p></div>
                 </div>
-                <div class="mt-3 text-xs p-2 rounded-lg ${status === 'Verified' ? 'bg-green-100 text-green-800' : (status === 'Verifying' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')}">
-                    <span class="font-semibold">Verification:</span> ${status}
+                <div class="mt-3 text-xs p-2 rounded-lg ${status === 'approved' ? 'bg-green-100 text-green-800' : (status === 'verifying' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')}">
+                    <span class="font-semibold">Verification:</span> ${statusLabel}
                 </div>
             `;
         }
@@ -176,6 +179,16 @@
                 '<': '&lt;',
                 '>': '&gt;'
             } [m]));
+        }
+
+        function normalizeVerificationStatus(status) {
+            const normalized = String(status || 'pending').trim().toLowerCase();
+            if (normalized === 'verified') return 'approved';
+            return normalized;
+        }
+
+        function capitalizeStatus(status) {
+            return status.charAt(0).toUpperCase() + status.slice(1);
         }
 
         function goToDashboard() {
@@ -264,12 +277,40 @@
                 alert("⚠️ Please upload a valid document for verification.");
                 return;
             }
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            user.verification_status = 'Verifying';
-            localStorage.setItem('user', JSON.stringify(user));
-            refreshProfileDisplay();
-            uploadModal.classList.add('hidden');
-            alert("✅ Document submitted! Your account is now under review.");
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('verification_doc', file);
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Uploading...';
+
+            try {
+                const response = await fetch('/BeSCMS/index.php?route=auth&action=upload_id', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Upload failed.');
+                }
+
+                user.verification_status = 'pending';
+                localStorage.setItem('user', JSON.stringify(user));
+                refreshProfileDisplay();
+                uploadModal.classList.add('hidden');
+                alert('✅ Document submitted! Your account is now under review.');
+            } catch (err) {
+                console.error('Upload error:', err);
+                alert('⚠️ ' + (err.message || 'Failed to upload document.'));
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Submit Verification';
+            }
         };
 
         refreshProfileDisplay();

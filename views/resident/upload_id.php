@@ -230,6 +230,10 @@
                     fileInput.value = '';
                     document.getElementById('selectedFile').classList.add('hidden');
                     document.getElementById('submitBtn').classList.add('hidden');
+                    if (user && user.id) {
+                        user.verification_status = 'pending';
+                        localStorage.setItem('user', JSON.stringify(user));
+                    }
                     setTimeout(() => checkVerificationStatus(), 1000);
                 } else {
                     showMessage(data.error || 'Upload failed', 'error');

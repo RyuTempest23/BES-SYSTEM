@@ -109,9 +109,13 @@
                     <i class="fas fa-id-card w-5"></i><span>Verify Account</span>
                 </a>
             </nav>
-            <div class="p-6 border-t border-gray-100 text-xs text-gray-400">
-                <i class="fas fa-shield-alt mr-1"></i> Barangay Lucero v2
+            <div class="p-6 border-t border-gray-100">
+                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
             </div>
+            <div class="p-6 text-xs text-gray-400"><i class="fas fa-shield-alt mr-1"></i> Barangay Lucero v2</div>
         </aside>
 
         <!-- ========== MAIN CONTENT ========== -->
@@ -124,13 +128,7 @@
                     </div>
                     <span class="font-semibold text-gray-700 text-sm md:text-base">Barangay Lucero, Bolinao, Pangasinan</span>
                 </div>
-                <div class="relative">
-                    <button onclick="logout()" class="focus:outline-none flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                            <i class="fas fa-sign-out-alt text-gray-500"></i>
-                        </div>
-                    </button>
-                </div>
+                <div class="relative"></div>
             </header>
 
             <!-- MAIN FLEX (center + right widget) -->
@@ -283,6 +281,7 @@
 
     <script>
         // Check authentication
+        const API_BASE = '/BeSCMS';
         const token = localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token || !user.id) {
@@ -291,15 +290,26 @@
 
         let selectedDoc = '';
 
+        function normalizeVerificationStatus(status) {
+            const normalized = String(status || 'pending').trim().toLowerCase();
+            return normalized === 'verified' ? 'approved' : normalized;
+        }
+
+        function capitalizeStatus(status) {
+            return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
         // Fill sidebar & user info with checkmark for verified
         function updateSidebar() {
-            const status = user.verification_status || 'Pending';
+            const rawStatus = user.verification_status || 'pending';
+            const status = normalizeVerificationStatus(rawStatus);
+            const statusLabel = capitalizeStatus(status);
             let statusColor = 'bg-yellow-100 text-yellow-800';
             let checkIcon = '';
-            if (status === 'Verified') {
+            if (status === 'approved') {
                 statusColor = 'bg-green-100 text-green-800';
                 checkIcon = '<i class="fas fa-check-circle text-green-600 ml-1"></i>';
-            } else if (status === 'Verifying') {
+            } else if (status === 'verifying') {
                 statusColor = 'bg-blue-100 text-blue-800';
             }
             document.getElementById('userSidebarInfo').innerHTML = `
@@ -307,7 +317,7 @@
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">${(user.name?.charAt(0) || 'G').toUpperCase()}</div>
                     <div><h3 class="font-semibold text-gray-800">${user.name || 'Resident'} ${checkIcon}</h3><p class="text-xs text-gray-400">Resident</p></div>
                 </div>
-                <div class="mt-3 text-xs p-2 rounded-lg ${statusColor}"><span class="font-semibold">Verification:</span> ${status}</div>
+                <div class="mt-3 text-xs p-2 rounded-lg ${statusColor}"><span class="font-semibold">Verification:</span> ${statusLabel}</div>
             `;
 
             // Add admin links if user is admin
@@ -345,17 +355,17 @@
         }
 
         function selectDocumentType(type) {
-            const verificationStatus = user.verification_status;
+            const verificationStatus = normalizeVerificationStatus(user.verification_status);
 
             // Special check for Barangay Indigency
-            if (type === 'Barangay Indigency' && verificationStatus !== 'Verified') {
+            if (type === 'Barangay Indigency' && verificationStatus !== 'approved') {
                 alert('⚠️ Account not verified! Please verify your account first to request a certificate.');
                 closeDocModal();
                 return;
             }
 
             // General verification check for all document types
-            if (verificationStatus !== 'Verified') {
+            if (verificationStatus !== 'approved') {
                 alert('⚠️ Your account is not verified. Please verify your account first to request any certificate.\n\nGo to your profile to upload verification documents.');
                 closeDocModal();
                 return;
@@ -367,36 +377,41 @@
             document.getElementById('purposeModal').classList.remove('hidden');
         }
 
-        function submitRequest() {
+        async function submitRequest() {
             const purpose = document.getElementById('requestPurpose').value.trim();
             if (!purpose) {
                 alert('Please provide a purpose for your request.');
                 return;
             }
 
-            // Create new request object
-            const newRequest = {
-                id: Date.now(),
-                type: selectedDoc,
-                purpose: purpose,
-                status: 'Pending',
-                date: new Date().toISOString(),
-                userId: user.id,
-                userName: user.name
-            };
+            try {
+                const response = await fetch(`${API_BASE}/index.php?route=requests&action=submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        certificate_type: selectedDoc,
+                        purpose: purpose,
+                        quantity: 1
+                    })
+                });
 
-            // Get existing requests from localStorage
-            const storageKey = `barangayRequests_${user.id}`;
-            let userRequests = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            userRequests.unshift(newRequest); // Add to beginning
-            localStorage.setItem(storageKey, JSON.stringify(userRequests));
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Unable to submit your request.');
+                }
 
-            alert('✅ Request submitted successfully! Your request is now pending.');
-            closePurposeModal();
+                alert('✅ Request submitted successfully! Your request is now pending.');
+                closePurposeModal();
 
-            // Ask if user wants to view their requests
-            if (confirm('Would you like to view your requests now?')) {
-                window.location.href = 'my_requests.php';
+                if (confirm('Would you like to view your requests now?')) {
+                    window.location.href = 'my_requests.php';
+                }
+            } catch (error) {
+                console.error('Request submission error:', error);
+                alert(`⚠️ ${error.message}`);
             }
         }
 
