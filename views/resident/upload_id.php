@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Account - Barangay Lucero</title>
+    <title>Verify Account - Barangay Polo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -50,7 +50,11 @@
                 <a href="upload_id.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 font-medium"><i class="fas fa-id-card"></i><span>Verify Account</span></a>
             </nav>
             <div id="adminLinksContainer" class="px-4 mt-4"></div>
-            <div class="p-6 border-t text-xs text-gray-400"><i class="fas fa-shield-alt"></i> Barangay Lucero</div>
+            <div class="p-6 border-t border-gray-100">
+                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </aside>
 
         <!-- Main Content -->
@@ -58,9 +62,8 @@
             <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center border-b">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center"><i class="fas fa-landmark text-amber-700"></i></div>
-                    <span class="font-semibold">Barangay Lucero, Bolinao, Pangasinan</span>
+                    <span class="font-semibold">Barangay Polo, Dapitan City, Zamboanga Del Norte</span>
                 </div>
-                <button id="logoutBtn"><i class="fas fa-sign-out-alt text-gray-500 text-xl"></i></button>
             </header>
 
             <div class="p-6">
@@ -111,7 +114,7 @@
             <!-- Footer -->
             <footer class="border-t border-gray-200 bg-white py-4 text-center text-gray-400 text-sm mt-6">
                 <div class="flex justify-between items-center px-6">
-                    <span>Copyright © Barangay Lucero 2021</span>
+                    <span>Copyright © Barangay Polo 2026</span>
                     <div class="space-x-4"><a href="#" class="hover:text-gray-600">Privacy Policy</a><a href="#" class="hover:text-gray-600">Terms of Use</a></div>
                 </div>
             </footer>
@@ -138,7 +141,7 @@
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">${(user.name?.charAt(0) || 'G').toUpperCase()}</div>
                     <div><h3 class="font-semibold text-gray-800">${user.name || 'Resident'}</h3><p class="text-xs text-gray-400">Resident</p></div>
                 </div>
-                <div class="mt-3 text-xs p-2 rounded-lg ${statusColor}"><span class="font-semibold">Verification:</span> ${user.verification_status || 'Pending'}</div>
+                <div class="mt-3 text-xs p-2 rounded-lg ${statusColor}"><span class="font-semibold">Verification:</span> ${user.verification_status.charAt(0).toUpperCase() + user.verification_status.slice(1) || 'Pending'}</div>
             `;
 
             // Add admin links if needed
@@ -254,10 +257,10 @@
             setTimeout(() => msgDiv.classList.add('hidden'), 5000);
         }
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        function logout() {
             localStorage.clear();
             window.location.href = '/BeSCMS/views/auth/login.php';
-        });
+        }
 
         function goToProfile() {
             window.location.href = 'dashboard.php';

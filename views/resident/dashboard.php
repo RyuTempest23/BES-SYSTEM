@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Barangay Lucero</title>
+    <title>Dashboard | Barangay Polo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -115,7 +115,7 @@
                     Logout
                 </button>
             </div>
-            <div class="p-6 text-xs text-gray-400"><i class="fas fa-shield-alt mr-1"></i> Barangay Lucero v2</div>
+            <div class="p-6 text-xs text-gray-400"><i class="fas fa-shield-alt mr-1"></i> Barangay Polo v2</div>
         </aside>
 
         <!-- ========== MAIN CONTENT ========== -->
@@ -126,7 +126,7 @@
                     <div class="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center text-amber-700">
                         <i class="fas fa-landmark"></i>
                     </div>
-                    <span class="font-semibold text-gray-700 text-sm md:text-base">Barangay Lucero, Bolinao, Pangasinan</span>
+                    <span class="font-semibold text-gray-700 text-sm md:text-base">Barangay Polo, Dapitan City, Zamboanga Del Norte</span>
                 </div>
                 <div class="relative"></div>
             </header>
@@ -186,7 +186,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- RIGHT WIDGET: EMERGENCY HOTLINES -->
                 <div class="lg:w-80 w-full">
                     <div class="rounded-2xl shadow-md overflow-hidden sticky top-24" style="background-color: #d4af37;">
@@ -204,11 +203,10 @@
                     </div>
                 </div>
             </div>
-
             <!-- FOOTER -->
             <footer class="border-t border-gray-200 bg-white py-4 text-center text-gray-400 text-sm mt-6">
                 <div class="flex justify-between items-center px-6">
-                    <span>Copyright © Barangay Lucero 2021</span>
+                    <span>Copyright © Barangay Polo 2026</span>
                     <div class="space-x-4"><a href="#" class="hover:text-gray-600">Privacy Policy</a><a href="#" class="hover:text-gray-600">Terms of Use</a></div>
                 </div>
             </footer>
@@ -271,6 +269,8 @@
                 <p class="text-gray-600 mb-2">Document Type: <span id="selectedDocType" class="font-semibold"></span></p>
                 <label class="block text-gray-700 mb-2">Purpose / Reason for request:</label>
                 <textarea id="requestPurpose" rows="4" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., For scholarship application, Business permit, etc."></textarea>
+                <label class="block text-gray-700 mb-2 mt-4">Quantity</label>
+                <input id="requestQuantity" type="number" min="1" value="1" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 <div class="flex gap-3 mt-5">
                     <button onclick="closePurposeModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
                     <button onclick="submitRequest()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Submit Request</button>
@@ -379,8 +379,15 @@
 
         async function submitRequest() {
             const purpose = document.getElementById('requestPurpose').value.trim();
+            const quantityInput = document.getElementById('requestQuantity');
+            const quantity = parseInt(quantityInput.value, 10) || 1;
             if (!purpose) {
                 alert('Please provide a purpose for your request.');
+                return;
+            }
+            if (quantity < 1) {
+                alert('Quantity must be at least 1.');
+                quantityInput.focus();
                 return;
             }
 
@@ -394,7 +401,7 @@
                     body: JSON.stringify({
                         certificate_type: selectedDoc,
                         purpose: purpose,
-                        quantity: 1
+                        quantity: quantity
                     })
                 });
 

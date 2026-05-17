@@ -218,16 +218,12 @@
         <div class="menu-section">
             <div class="menu-label">General</div>
             <a href="#" class="menu-item active"><span class="menu-icon">🏠</span> Dashboard</a>
-            <a href="#" class="menu-item"><span class="menu-icon">👤</span> Barangay Officials</a>
             <a href="/BeSCMS/views/admin/add_residents.php" class="menu-item"><span class="menu-icon">👥</span> Residents</a>
             <a href="/BeSCMS/views/admin/pending_requests.php" class="menu-item"><span class="menu-icon">📄</span> Certification</a>
-            <a href="/BeSCMS/views/admin/pending_requests.php" class="menu-item"><span class="menu-icon">🌐</span> Online Request</a>
-            <a href="/BeSCMS/views/admin/verify_accounts.php" class="menu-item"><span class="menu-icon">🔑</span> Accounts</a>
+            <a href="/BeSCMS/views/admin/verify_accounts.php" class="menu-item"><span class="menu-icon">🔑</span> Verify Accounts</a>
+            <!-- <a href="/BeSCMS/views/admin/announcement.php" class="menu-item"><span class="menu-icon">📢</span> Barangay Announcements</a> -->
         </div>
-        <div class="menu-section">
-            <div class="menu-label">Settings</div>
-            <a href="#" class="menu-item"><span class="menu-icon">⚙️</span> Barangay Details</a>
-        </div>
+
         <div class="sidebar-bottom">
             <button onclick="logout()" style="width:100%; background:#dc2626; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;">🚪 Logout</button>
         </div>
@@ -283,12 +279,14 @@
             </div>
         </div>
 
-        <div class="content-bottom">
+        <!-- <div class="content-bottom">
             <div class="content-bottom-header">
                 <span>📢</span> Recent Announcements
             </div>
-            <p style="margin-top: 10px; color: #666;">No new announcements.</p>
-        </div>
+            <div id="announcementSection" style="margin-top: 10px; color: #666;">
+                <p>No new announcements.</p>
+            </div>
+        </div> -->
 
         <div class="bottom-date">
             Today is <?php echo date('l Y/m/d'); ?>
@@ -308,6 +306,18 @@
         function logout() {
             localStorage.clear();
             window.location.href = '/BeSCMS/views/auth/login.php';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>\"']/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                if (m === "'") return '&#39;';
+                return m;
+            });
         }
 
         // Draw pie chart on canvas
@@ -400,6 +410,50 @@
 
         loadVoterStats();
         loadCounts();
+        // loadAnnouncement();
+
+        // function loadAnnouncement() {
+        //     const announcementSection = document.getElementById('announcementSection');
+        //     const stored = localStorage.getItem('latestAnnouncement');
+        //     if (!stored) {
+        //         announcementSection.innerHTML = '<p>No new announcements.</p>';
+        //         return;
+        //     }
+
+        //     try {
+        //         const announcement = JSON.parse(stored);
+        //         announcementSection.innerHTML = `
+        //             <div style="color:#1f2937;font-weight:600;">${escapeHtml(announcement.title)}</div>
+        //             <div style="margin-top:8px;color:#4b5563;line-height:1.5;">${escapeHtml(announcement.message)}</div>
+        //             <a href="#" class="btn-status btn-blue" style="margin-top: 12px; display: inline-block;" onclick="downloadLatestAnnouncement(event)">Download</a>
+        //         `;
+        //     } catch (err) {
+        //         console.error('Invalid announcement data', err);
+        //         announcementSection.innerHTML = '<p>No new announcements.</p>';
+        //     }
+        // }
+
+        // function downloadLatestAnnouncement(event) {
+        //     if (event) event.preventDefault();
+        //     const stored = localStorage.getItem('latestAnnouncement');
+        //     if (!stored) return;
+
+        //     try {
+        //         const announcement = JSON.parse(stored);
+        //         const text = `Announcement Title: ${announcement.title}\nPublished: ${announcement.publishedAt}\n\n${announcement.message}`;
+        //         const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        //         const url = URL.createObjectURL(blob);
+        //         const link = document.createElement('a');
+        //         link.href = url;
+        //         link.download = 'announcement.txt';
+        //         document.body.appendChild(link);
+        //         link.click();
+        //         document.body.removeChild(link);
+        //         URL.revokeObjectURL(url);
+        //     } catch (err) {
+        //         console.error('Unable to download announcement', err);
+        //     }
+        // }
     </script>
 </body>
 </html>

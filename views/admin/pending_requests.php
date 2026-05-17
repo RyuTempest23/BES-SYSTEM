@@ -53,7 +53,7 @@
     <h2>Pending Certificate Requests</h2>
     <div id="requests-list">Loading...</div>
     <br>
-    <button onclick="logout()">Logout</button>
+    <a href="dashboard.php" style="display:inline-block;padding:8px 14px;background:#64748b;color:#fff;border-radius:6px;text-decoration:none;margin-top:10px;">← Back to Dashboard</a>
 
     <script>
         const API_BASE = '/BeSCMS';

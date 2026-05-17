@@ -6,7 +6,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>My Requests | Barangay Lucero</title>
+    <title>My Requests | Barangay Polo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -60,16 +60,19 @@
                 <a href="upload_id.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-id-card"></i><span>Verify Account</span></a>
             </nav>
             <div id="adminLinksContainer" class="px-4 mt-4"></div>
-            <div class="p-6 border-t text-xs text-gray-400"><i class="fas fa-shield-alt"></i> Barangay Lucero</div>
+            <div class="p-6 border-t border-gray-100">
+                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </aside>
 
         <div class="flex-1 ml-72">
             <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center border-b">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center"><i class="fas fa-landmark text-amber-700"></i></div>
-                    <span class="font-semibold">Barangay Lucero, Bolinao, Pangasinan</span>
+                    <span class="font-semibold">Barangay Polo, Dapitan City, Zamboanga Del Norte</span>
                 </div>
-                <button id="logoutBtn"><i class="fas fa-sign-out-alt text-gray-500 text-xl"></i></button>
             </header>
 
             <div class="p-6">
@@ -91,21 +94,8 @@
                     </div>
                 </div>
             </div>
-
-            <div class="lg:w-80 w-full fixed bottom-4 right-4">
-                <div class="rounded-2xl shadow-md p-4" style="background:#d4af37;">
-                    <i class="fas fa-phone-alt text-red-700"></i>
-                    <h3 class="font-bold text-gray-900 mt-1 text-sm">EMERGENCY</h3>
-                    <ul class="mt-2 text-xs">
-                        <li>📞 Barangay: 0917 111 2222</li>
-                        <li>🚔 Police: 117</li>
-                        <li>🔥 Fire: 160</li>
-                    </ul>
-                </div>
-            </div>
-
             <footer class="border-t bg-white py-4 text-center text-gray-400 text-sm mt-6">
-                Copyright © Barangay Lucero 2021
+                Copyright © Barangay Polo 2026
             </footer>
         </div>
     </div>
@@ -308,10 +298,10 @@
             `;
         }
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        function logout() {
             localStorage.clear();
             window.location.href = '/BeSCMS/views/auth/login.php';
-        });
+        }
 
         loadRequests();
 

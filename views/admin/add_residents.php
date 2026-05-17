@@ -53,6 +53,25 @@
             font-weight: bold;
             margin-right: 10px;
         }
+        a.back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #64748b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 0;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
         button.danger { background: #ef4444; }
         button.warning { background: #f59e0b; }
         table {
@@ -95,7 +114,10 @@
 </head>
 <body>
 <div class="container">
-    <h2>🏘️ Resident Management</h2>
+    <div class="page-header">
+        <h2>🏘️ Resident Management</h2>
+        <a href="dashboard.php" class="back-btn">← Back to Dashboard</a>
+    </div>
     <div id="message" class="message"></div>
 
     <!-- Add Resident Form -->

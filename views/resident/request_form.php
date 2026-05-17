@@ -6,7 +6,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>My Profile | Barangay Lucero</title>
+    <title>My Profile | Barangay Polo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -21,16 +21,19 @@
                 <a href="dashboard.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
                 <a href="my_requests.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-file-alt"></i><span>My Request</span></a>
             </nav>
-            <div class="p-6 border-t text-xs text-gray-400"><i class="fas fa-id-card"></i> Account management</div>
+            <div class="p-6 border-t border-gray-100">
+                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </aside>
 
         <div class="flex-1 ml-72">
             <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center border-b">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center"><i class="fas fa-landmark text-amber-700"></i></div>
-                    <span class="font-semibold">Barangay Lucero, Bolinao, Pangasinan</span>
+                    <span class="font-semibold">Barangay Polo, Dapitan City, Zamboanga Del Norte</span>
                 </div>
-                <button onclick="logout()"><i class="fas fa-sign-out-alt text-gray-500 text-xl"></i></button>
             </header>
 
             <div class="flex flex-col lg:flex-row p-6 gap-6">
@@ -156,7 +159,7 @@
                 <div class="flex justify-between border-b pb-2"><span class="text-gray-500">Full Name:</span><span class="font-medium">${escapeHtml(user.name || '')}</span></div>
                 <div class="flex justify-between border-b pb-2"><span class="text-gray-500">Username:</span><span class="font-medium">${escapeHtml(user.username || user.email || '')}</span></div>
                 <div class="flex justify-between border-b pb-2"><span class="text-gray-500">Email:</span><span class="font-medium">${escapeHtml(user.email || '')}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Barangay:</span><span class="font-medium">${escapeHtml(user.barangay || 'Lucero, Bolinao')}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Barangay:</span><span class="font-medium">${escapeHtml(user.barangay || 'Polo, Dapitan City')}</span></div>
             `;
 
             // Sidebar with checkmark
@@ -206,7 +209,7 @@
             document.getElementById('editFullName').value = user.name || '';
             document.getElementById('editUsername').value = user.username || '';
             document.getElementById('editEmail').value = user.email || '';
-            document.getElementById('editBarangay').value = user.barangay || 'Lucero, Bolinao';
+            document.getElementById('editBarangay').value = user.barangay || 'Polo, Dapitan City';
             editModal.classList.remove('hidden');
         };
 
