@@ -42,18 +42,22 @@
 <body class="bg-gray-100">
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="w-72 bg-white shadow-lg border-r fixed h-full z-10">
-            <div class="p-6 border-b cursor-pointer hover:bg-gray-50 transition" id="sidebarUser" onclick="goToProfile()"></div>
-            <nav class="mt-6 px-4 space-y-2">
-                <a href="dashboard.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-                <a href="my_requests.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-file-alt"></i><span>My Request</span></a>
-                <a href="upload_id.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 font-medium"><i class="fas fa-id-card"></i><span>Verify Account</span></a>
-            </nav>
-            <div id="adminLinksContainer" class="px-4 mt-4"></div>
-            <div class="p-6 border-t border-gray-100">
-                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+        <aside class="w-72 bg-white shadow-lg border-r fixed h-full z-10 flex flex-col justify-between">
+            <div>
+                <div class="p-6 border-b cursor-pointer hover:bg-gray-50 transition" id="sidebarUser" onclick="goToProfile()"></div>
+                <nav class="mt-6 px-4 space-y-2">
+                    <a href="dashboard.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                    <a href="my_requests.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-file-alt"></i><span>My Request</span></a>
+                    <a href="upload_id.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 font-medium"><i class="fas fa-id-card"></i><span>Verify Account</span></a>
+                </nav>
+                <div id="adminLinksContainer" class="px-4 mt-4"></div>
+            </div>
+            <div>
+                <div class="p-6 border-t border-gray-100">
+                    <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </div>
         </aside>
 

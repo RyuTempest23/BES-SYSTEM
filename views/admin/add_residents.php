@@ -110,6 +110,23 @@
         .edit-form h4 { margin-bottom: 10px; color: #b45309; }
         .edit-form input, .edit-form select { margin-bottom: 10px; }
         .edit-form button { margin-top: 5px; }
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-box input {
+            flex: 1;
+            max-width: 400px;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .search-box input::placeholder {
+            color: #a0aec0;
+        }
     </style>
 </head>
 <body>
@@ -152,7 +169,11 @@
     </div>
 
     <!-- Residents List -->
-    <h3>📋 Residents List</h3>
+    <h3> Residents List</h3>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Search by name, address, contact, or ID...">
+        <span id="searchResultCount" style="color: #666; font-size: 14px;"></span>
+    </div>
     <div id="residentsList">Loading...</div>
 </div>
 
@@ -192,7 +213,9 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    renderResidents(data.data);
+                    allResidents = data.data;
+                    renderResidents(allResidents);
+                    document.getElementById('searchResultCount').textContent = '';
                 } else {
                     document.getElementById('residentsList').innerHTML = '<p>Error loading residents.</p>';
                     showMessage(data.error || 'Failed to load residents', 'error');
@@ -201,6 +224,33 @@
                 console.error(err);
                 document.getElementById('residentsList').innerHTML = '<p>Network error.</p>';
             }
+        }
+
+        let allResidents = [];
+
+        function filterResidents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                renderResidents(allResidents);
+                document.getElementById('searchResultCount').textContent = '';
+                return;
+            }
+            
+            const filtered = allResidents.filter(r => {
+                const id = r.id.toString();
+                const name = (r.full_name || '').toLowerCase();
+                const address = (r.address || '').toLowerCase();
+                const contact = (r.contact_number || '').toLowerCase();
+                
+                return id.includes(searchTerm) || 
+                       name.includes(searchTerm) || 
+                       address.includes(searchTerm) || 
+                       contact.includes(searchTerm);
+            });
+            
+            renderResidents(filtered);
+            document.getElementById('searchResultCount').textContent = `Found: ${filtered.length} resident(s)`;
         }
 
         function renderResidents(residents) {
@@ -368,6 +418,9 @@
                 showMessage('Network error', 'error');
             }
         });
+
+        // SEARCH INPUT EVENT
+        document.getElementById('searchInput').addEventListener('input', filterResidents);
 
         loadResidents();
     </script>

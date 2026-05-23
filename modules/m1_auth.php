@@ -209,6 +209,50 @@ try {
         }
     }
     
+    // ========== CHANGE PASSWORD (Protected) ==========
+    if ($action === 'change_password' && $method === 'POST') {
+        $user = requireAuth();
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        $current_password = $data['current_password'] ?? '';
+        $new_password = $data['new_password'] ?? '';
+        
+        if (!$current_password || !$new_password) {
+            jsonResponse(['error' => 'Current and new password are required'], 400);
+        }
+        
+        if (strlen($new_password) < 6) {
+            jsonResponse(['error' => 'New password must be at least 6 characters'], 400);
+        }
+        
+        // Get user's current password hash
+        $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+        $stmt->execute([$user['user_id']]);
+        $userRecord = $stmt->fetch();
+        
+        if (!$userRecord) {
+            jsonResponse(['error' => 'User not found'], 404);
+        }
+        
+        // Verify current password
+        if (!password_verify($current_password, $userRecord['password'])) {
+            jsonResponse(['error' => 'Current password is incorrect'], 401);
+        }
+        
+        // Hash new password and update
+        $hashed_new_password = password_hash($new_password, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+        
+        if ($stmt->execute([$hashed_new_password, $user['user_id']])) {
+            jsonResponse([
+                'success' => true,
+                'message' => 'Password changed successfully'
+            ]);
+        } else {
+            jsonResponse(['error' => 'Failed to change password'], 500);
+        }
+    }
+    
     // If no action matched
     jsonResponse(['error' => 'Invalid action'], 400);
     

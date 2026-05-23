@@ -33,6 +33,19 @@ try {
         jsonResponse(['success' => true, 'count' => $count, 'data' => $requests]);
     }
 
+    // ---------- APPROVED REQUESTS LIST (GET) ----------
+    if ($action === 'approved_requests' && $method === 'GET') {
+        $stmt = $pdo->prepare("SELECT cr.*, u.email, r.full_name
+            FROM certificate_requests cr
+            JOIN users u ON cr.user_id = u.id
+            JOIN residents r ON u.resident_id = r.id
+            WHERE cr.status = 'approved'
+            ORDER BY cr.approved_at ASC");
+        $stmt->execute();
+        $requests = $stmt->fetchAll();
+        jsonResponse(['success' => true, 'count' => count($requests), 'data' => $requests]);
+    }
+
     // ---------- PENDING VERIFICATIONS (for account verification) ----------
     if ($action === 'pending_verifications' && $method === 'GET') {
         $statusFilter = $_GET['status'] ?? 'pending';

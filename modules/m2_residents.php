@@ -10,19 +10,28 @@ try {
     $pdo = getDB();
     $user = requireAuth(); // only authenticated users can access
 
-    // Only admin or BHW can manage residents
-    if (!in_array($user['role'], ['admin', 'bhw'])) {
+    // ---------- PERMISSION SETUP ----------
+    // Admin and BHW have full access to all resident actions.
+    // Residents can only access the 'edit' action (to update their own profile).
+    $isAdminOrBhw = in_array($user['role'], ['admin', 'bhw']);
+    $isResident = ($user['role'] === 'resident');
+
+    if (!$isAdminOrBhw && !$isResident) {
         jsonResponse(['error' => 'Forbidden: insufficient privileges'], 403);
     }
 
     // ---------- LIST RESIDENTS (GET) ----------
     if ($action === 'list' && $method === 'GET') {
+        // Only admin/BHW can list residents
+        if (!$isAdminOrBhw) {
+            jsonResponse(['error' => 'Forbidden'], 403);
+        }
+
         $page = max(1, (int)($_GET['page'] ?? 1));
         $limit = max(1, (int)($_GET['limit'] ?? 10));
         $offset = ($page - 1) * $limit;
         $search = trim($_GET['search'] ?? '');
 
-        // Build base query
         $query = "SELECT * FROM residents WHERE 1=1";
         $params = [];
 
@@ -31,19 +40,16 @@ try {
             $params[] = "%$search%";
         }
 
-        // Get total count (separate query for reliability)
         $countQuery = str_replace("SELECT *", "SELECT COUNT(*) as total", $query);
         $countStmt = $pdo->prepare($countQuery);
         $countStmt->execute($params);
         $total = $countStmt->fetch()['total'];
 
-        // Add order and pagination
         $query .= " ORDER BY id DESC LIMIT ? OFFSET ?";
         $params[] = $limit;
         $params[] = $offset;
 
         $stmt = $pdo->prepare($query);
-        // Bind limit and offset as integers to avoid quoting
         foreach ($params as $key => $value) {
             $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
             $stmt->bindValue($key + 1, $value, $paramType);
@@ -65,6 +71,11 @@ try {
 
     // ---------- ADD RESIDENT (POST) ----------
     if ($action === 'add' && $method === 'POST') {
+        // Only admin/BHW can add residents
+        if (!$isAdminOrBhw) {
+            jsonResponse(['error' => 'Forbidden'], 403);
+        }
+
         $data = json_decode(file_get_contents('php://input'), true);
         $required = ['full_name'];
         foreach ($required as $field) {
@@ -89,14 +100,25 @@ try {
         jsonResponse(['success' => true, 'message' => 'Resident added', 'id' => $pdo->lastInsertId()], 201);
     }
 
-
-    // ---------- EDIT RESIDENT (PUT) ----------
+    // ---------- EDIT RESIDENT (PUT) - also allows residents to edit themselves ----------
     if ($action === 'edit' && $method === 'PUT') {
         $data = json_decode(file_get_contents('php://input'), true);
         if (empty($data['id'])) {
             jsonResponse(['error' => 'Resident ID required'], 400);
         }
 
+        $residentId = (int)$data['id'];
+
+        // Permission check: residents can only edit their own record
+        if ($isResident) {
+            if ($user['resident_id'] != $residentId) {
+                jsonResponse(['error' => 'You can only update your own profile'], 403);
+            }
+        } elseif (!$isAdminOrBhw) {
+            jsonResponse(['error' => 'Forbidden'], 403);
+        }
+
+        // Build updatable fields (same as before)
         $fields = [];
         $params = [];
         $updatable = ['full_name', 'birthdate', 'address', 'contact_number', 'registered_voter'];
@@ -104,12 +126,9 @@ try {
         foreach ($updatable as $field) {
             if (array_key_exists($field, $data)) {
                 $value = $data[$field];
-                
-                // Handle empty strings as NULL for nullable fields
                 if ($value === '' && in_array($field, ['birthdate', 'address', 'contact_number'])) {
                     $value = null;
                 }
-                
                 $fields[] = "$field = ?";
                 $params[] = $value;
             }
@@ -119,9 +138,9 @@ try {
             jsonResponse(['error' => 'No fields to update'], 400);
         }
         
-        // Add last_updated_by (track who updated the record)
+        // Add last_updated_by (who made the change)
         $params[] = $user['email'];
-        $params[] = $data['id'];
+        $params[] = $residentId;
 
         $sql = "UPDATE residents SET " . implode(', ', $fields) . ", last_updated_by = ? WHERE id = ?";
         $stmt = $pdo->prepare($sql);
@@ -132,12 +151,16 @@ try {
 
     // ---------- DELETE RESIDENT (DELETE) ----------
     if ($action === 'delete' && $method === 'DELETE') {
+        // Only admin/BHW can delete
+        if (!$isAdminOrBhw) {
+            jsonResponse(['error' => 'Forbidden'], 403);
+        }
+
         $id = $_GET['id'] ?? 0;
         if (!$id) {
             jsonResponse(['error' => 'Resident ID required'], 400);
         }
 
-        // Check if user account exists for this resident
         $stmt = $pdo->prepare("SELECT id FROM users WHERE resident_id = ?");
         $stmt->execute([$id]);
         if ($stmt->fetch()) {
@@ -151,6 +174,11 @@ try {
 
     // ---------- EXPORT RESIDENTS (GET) ----------
     if ($action === 'export' && $method === 'GET') {
+        // Only admin/BHW can export
+        if (!$isAdminOrBhw) {
+            jsonResponse(['error' => 'Forbidden'], 403);
+        }
+
         $format = $_GET['format'] ?? 'csv';
         $stmt = $pdo->query("SELECT id, full_name, birthdate, address, contact_number, registered_voter, added_by, created_at FROM residents ORDER BY id");
         $residents = $stmt->fetchAll();
@@ -170,7 +198,9 @@ try {
         }
     }
 
+    // If no valid action matched
     jsonResponse(['error' => 'Invalid action'], 400);
+    
 } catch (PDOException $e) {
     jsonResponse(['error' => 'Database error: ' . $e->getMessage()], 500);
 }

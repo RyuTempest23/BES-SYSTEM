@@ -102,6 +102,7 @@ views\resident
 views\resident\dashboard.php
 views\resident\my_requests.php
 views\resident\request_form.php
+views\resident\upload_id.php
 views\templates
 views\templates\footer.php
 views\templates\header.php

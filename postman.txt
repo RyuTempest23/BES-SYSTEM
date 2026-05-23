@@ -1,0 +1,169 @@
+## Full Postman testing process
+
+### 1. Start the app
+- Make sure XAMPP is running
+- Open `http://localhost/BeSCMS` in your browser to confirm the app is accessible
+
+---
+
+## 2. Test login first (get JWT token)
+
+### Request
+- Method: `POST`
+- URL: `http://localhost/BeSCMS/index.php?route=auth&action=login`
+
+### Headers
+- `Content-Type: application/json`
+
+### Body
+Select `raw` + `JSON` and paste:
+```json
+{
+  "email": "admin@gmail.com",
+  "password": "yourpassword"
+}
+```
+
+### Expected response
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "token": "eyJ0eXAiOiJKV1QiLCJh..."
+}
+```
+
+> Copy the token value exactly. Do not include surrounding quotes.
+
+---
+
+## 3. Use the token for protected API routes
+
+### Add auth header
+- Header name: `Authorization`
+- Header value: `Bearer <token>`
+
+Example:
+- `Authorization: Bearer eyJ0eXAiOiJKV1QiLCJh...`
+
+---
+
+## 4. Test resident routes
+
+### A. List residents
+- Method: `GET`
+- URL: `http://localhost/BeSCMS/index.php?route=residents&action=list&limit=10&page=1`
+
+Headers:
+- `Authorization: Bearer <token>`
+
+This works only for `admin` or `bhw`.
+
+---
+
+### B. Add a resident
+- Method: `POST`
+- URL: `http://localhost/BeSCMS/index.php?route=residents&action=add`
+
+Headers:
+- `Content-Type: application/json`
+- `Authorization: Bearer <token>`
+
+Body:
+```json
+{
+  "full_name": "Juan Dela Cruz",
+  "birthdate": "1990-01-01",
+  "address": "123 Barangay St",
+  "contact_number": "09171234567",
+  "registered_voter": "yes"
+}
+```
+
+---
+
+### C. Edit a resident
+- Method: `PUT`
+- URL: `http://localhost/BeSCMS/index.php?route=residents&action=edit`
+
+Headers:
+- `Content-Type: application/json`
+- `Authorization: Bearer <token>`
+
+Body:
+```json
+{
+  "id": 123,
+  "full_name": "Juan D. Cruz",
+  "address": "456 New Address"
+}
+```
+
+Notes:
+- Residents can only edit their own profile
+- Admin/BHW can edit any resident
+
+---
+
+### D. Delete a resident
+- Method: `DELETE`
+- URL: `http://localhost/BeSCMS/index.php?route=residents&action=delete&id=123`
+
+Headers:
+- `Authorization: Bearer <token>`
+
+---
+
+### E. Export residents
+- Method: `GET`
+- URL: `http://localhost/BeSCMS/index.php?route=residents&action=export&format=json`
+- or `format=csv`
+
+Headers:
+- `Authorization: Bearer <token>`
+
+---
+
+## 5. Signup flow
+If you want to create a new user first:
+
+### Request
+- Method: `POST`
+- URL: `http://localhost/BeSCMS/index.php?route=auth&action=signup`
+
+Headers:
+- `Content-Type: application/json`
+
+Body:
+```json
+{
+  "full_name": "Juan Dela Cruz",
+  "email": "juan@example.com",
+  "password": "secret123",
+  "confirm_password": "secret123"
+}
+```
+
+---
+
+## 6. Common Postman pitfalls
+
+- Use `raw` JSON body, not `form-data`
+- Header must be exactly:
+  - `Authorization: Bearer eyJ...`
+- Do not wrap the token in quotes
+- Token expires in 7 days
+- If you get:
+  - `Authentication required` → missing header
+  - `Invalid or expired token` → bad token format or expired token
+
+---
+
+## 7. Quick test order
+
+1. `POST ?route=auth&action=login`
+2. copy `token`
+3. send protected request with `Authorization: Bearer <token>`
+4. verify response
+
+If you want, I can give you a ready-made Postman collection format for these exact calls.

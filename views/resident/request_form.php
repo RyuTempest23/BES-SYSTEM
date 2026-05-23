@@ -15,16 +15,20 @@
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="w-72 bg-white shadow-lg border-r fixed h-full z-10">
-            <div class="p-6 border-b cursor-pointer hover:bg-gray-50 transition" id="sidebarUser" onclick="goToDashboard()"></div>
-            <nav class="mt-6 px-4 space-y-2">
-                <a href="dashboard.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-                <a href="my_requests.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-file-alt"></i><span>My Request</span></a>
-            </nav>
-            <div class="p-6 border-t border-gray-100">
-                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+        <aside class="w-72 bg-white shadow-lg border-r border-gray-200 fixed h-full z-10 flex flex-col justify-between">
+            <div>
+                <div class="p-6 border-b cursor-pointer hover:bg-gray-50 transition" id="sidebarUser" onclick="goToDashboard()"></div>
+                <nav class="mt-6 px-4 space-y-2">
+                    <a href="dashboard.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                    <a href="my_requests.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100"><i class="fas fa-file-alt"></i><span>My Request</span></a>
+                </nav>
+            </div>
+            <div>
+                <div class="p-6 border-t border-gray-100">
+                    <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </div>
         </aside>
 
@@ -87,8 +91,13 @@
             </div>
             <div class="p-6 space-y-4">
                 <div><label class="block text-gray-700 font-medium mb-1">Full Name</label><input type="text" id="editFullName" class="w-full border border-gray-300 rounded-lg p-2"></div>
-                <div><label class="block text-gray-700 font-medium mb-1">Username</label><input type="text" id="editUsername" class="w-full border border-gray-300 rounded-lg p-2"></div>
                 <div><label class="block text-gray-700 font-medium mb-1">Email</label><input type="email" id="editEmail" class="w-full border border-gray-300 rounded-lg p-2"></div>
+                
+                <div class="border-t pt-4 mt-4">
+                    <div><label class="block text-gray-700 font-medium mb-1">Current Password</label><input type="password" id="currentPassword" class="w-full border border-gray-300 rounded-lg p-2" placeholder="Enter current password"></div>
+                    <div><label class="block text-gray-700 font-medium mb-1">New Password</label><input type="password" id="newPassword" class="w-full border border-gray-300 rounded-lg p-2" placeholder="Enter new password (min. 6 characters)"></div>
+                </div>
+                
                 <div><label class="block text-gray-700 font-medium mb-1">Barangay</label><input type="text" id="editBarangay" class="w-full border border-gray-300 rounded-lg p-2"></div>
                 <div class="flex gap-3 mt-5">
                     <button id="saveDetailsBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">Save Changes</button>
@@ -129,6 +138,7 @@
     <script>
         const token = localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('user') || '{}');
+        const API_BASE = '/BeSCMS';
         if (!token || !user.id) {
             window.location.href = '/BeSCMS/views/auth/login.php';
         }
@@ -157,7 +167,6 @@
 
             document.getElementById('userDetails').innerHTML = `
                 <div class="flex justify-between border-b pb-2"><span class="text-gray-500">Full Name:</span><span class="font-medium">${escapeHtml(user.name || '')}</span></div>
-                <div class="flex justify-between border-b pb-2"><span class="text-gray-500">Username:</span><span class="font-medium">${escapeHtml(user.username || user.email || '')}</span></div>
                 <div class="flex justify-between border-b pb-2"><span class="text-gray-500">Email:</span><span class="font-medium">${escapeHtml(user.email || '')}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Barangay:</span><span class="font-medium">${escapeHtml(user.barangay || 'Polo, Dapitan City')}</span></div>
             `;
@@ -207,9 +216,10 @@
 
         editBtn.onclick = () => {
             document.getElementById('editFullName').value = user.name || '';
-            document.getElementById('editUsername').value = user.username || '';
             document.getElementById('editEmail').value = user.email || '';
             document.getElementById('editBarangay').value = user.barangay || 'Polo, Dapitan City';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
             editModal.classList.remove('hidden');
         };
 
@@ -219,19 +229,76 @@
         closeEditModal.onclick = closeEditModalFunc;
         cancelEditBtn.onclick = closeEditModalFunc;
 
-        saveDetailsBtn.onclick = () => {
+        saveDetailsBtn.onclick = async () => {
             const newName = document.getElementById('editFullName').value.trim();
-            const newUsername = document.getElementById('editUsername').value.trim();
             const newEmail = document.getElementById('editEmail').value.trim();
             const newBarangay = document.getElementById('editBarangay').value.trim();
-            if (newName) user.name = newName;
-            if (newUsername) user.username = newUsername;
-            if (newEmail) user.email = newEmail;
-            if (newBarangay) user.barangay = newBarangay;
-            localStorage.setItem('user', JSON.stringify(user));
-            refreshProfileDisplay();
-            closeEditModalFunc();
-            alert('Profile details updated successfully!');
+            const currentPassword = document.getElementById('currentPassword').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            
+            if (!newName) {
+                alert('Full Name cannot be empty');
+                return;
+            }
+
+            try {
+                // Update resident record in database
+                const payload = {
+                    id: user.resident_id || user.id,
+                    full_name: newName
+                };
+                
+                const response = await fetch(`${API_BASE}/index.php?route=residents&action=edit`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to update profile');
+                }
+
+                // Update password if provided
+                if (currentPassword && newPassword) {
+                    if (newPassword.length < 6) {
+                        alert('⚠️ New password must be at least 6 characters');
+                        return;
+                    }
+
+                    const pwdResponse = await fetch(`${API_BASE}/index.php?route=auth&action=change_password`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            current_password: currentPassword,
+                            new_password: newPassword
+                        })
+                    });
+
+                    const pwdData = await pwdResponse.json();
+                    if (!pwdResponse.ok || !pwdData.success) {
+                        throw new Error(pwdData.error || 'Failed to change password');
+                    }
+                }
+
+                // Update local storage
+                user.name = newName;
+                if (newEmail) user.email = newEmail;
+                if (newBarangay) user.barangay = newBarangay;
+                localStorage.setItem('user', JSON.stringify(user));
+                refreshProfileDisplay();
+                closeEditModalFunc();
+                alert('✅ Profile details updated successfully!');
+            } catch (err) {
+                console.error('Update error:', err);
+                alert('⚠️ ' + (err.message || 'Failed to update profile'));
+            }
         };
 
         // Verification Upload Modal

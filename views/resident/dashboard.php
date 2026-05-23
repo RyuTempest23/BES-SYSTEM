@@ -94,10 +94,11 @@
 
     <div class="flex min-h-screen">
         <!-- ========== LEFT SIDEBAR ========== -->
-        <aside class="w-72 bg-white shadow-lg border-r border-gray-200 fixed h-full z-10 flex flex-col">
-            <div class="p-6 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition" id="userSidebarInfo" onclick="goToProfile()">
-                <!-- Dynamically filled by JS -->
-            </div>
+        <aside class="w-72 bg-white shadow-lg border-r border-gray-200 fixed h-full z-10 flex flex-col justify-between">
+            <div>
+                <div class="p-6 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition" id="userSidebarInfo" onclick="goToProfile()">
+                    <!-- Dynamically filled by JS -->
+                </div>
             <nav class="flex-1 mt-6 px-4 space-y-2">
                 <a href="dashboard.php" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 font-medium">
                     <i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span>
@@ -109,13 +110,13 @@
                     <i class="fas fa-id-card w-5"></i><span>Verify Account</span>
                 </a>
             </nav>
+            </div>
             <div class="p-6 border-t border-gray-100">
                 <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>
                     Logout
                 </button>
             </div>
-            <div class="p-6 text-xs text-gray-400"><i class="fas fa-shield-alt mr-1"></i> Barangay Polo v2</div>
         </aside>
 
         <!-- ========== MAIN CONTENT ========== -->
@@ -148,13 +149,13 @@
 
                     <!-- FIVE STEPS TIMELINE -->
                     <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-                        <div class="flex justify-between items-center mb-4">
+                        <!-- <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-chalkboard-user mr-2 text-amber-500"></i> FIVE STEPS IN REQUESTING BARANGAY CERTIFICATES</h3>
                             <div class="flex gap-2">
                                 <button id="stepLeftBtn" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition"><i class="fas fa-chevron-left"></i></button>
                                 <button id="stepRightBtn" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition"><i class="fas fa-chevron-right"></i></button>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="relative overflow-hidden">
                             <div id="stepCarousel" class="flex gap-5 overflow-x-auto step-scroll pb-3 snap-x snap-mandatory">
                                 <div class="min-w-[180px] snap-start bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl p-4 text-center shadow-sm">
@@ -186,30 +187,14 @@
                         </div>
                     </div>
                 </div>
-                <!-- RIGHT WIDGET: EMERGENCY HOTLINES -->
-                <div class="lg:w-80 w-full">
-                    <div class="rounded-2xl shadow-md overflow-hidden sticky top-24" style="background-color: #d4af37;">
-                        <div class="p-5">
-                            <div class="flex items-center gap-2 text-white mb-3"><i class="fas fa-bell text-red-600 text-xl"></i>
-                                <h3 class="font-bold text-lg text-gray-900">EMERGENCY HOTLINES</h3>
-                            </div>
-                            <ul class="space-y-3 text-gray-800">
-                                <li class="flex justify-between border-b border-yellow-600/30 pb-2"><span><i class="fas fa-phone-alt mr-2"></i> Barangay Hall</span><span class="font-mono">(075) 123 4567</span></li>
-                                <li class="flex justify-between border-b border-yellow-600/30 pb-2"><span><i class="fas fa-shield-alt mr-2"></i> PNP Bolinao</span><span class="font-mono">0998 765 4321</span></li>
-                                <li class="flex justify-between border-b border-yellow-600/30 pb-2"><span><i class="fas fa-ambulance mr-2"></i> Emergency Rescue</span><span class="font-mono">117 / 911</span></li>
-                                <li class="flex justify-between"><span><i class="fas fa-fire-extinguisher mr-2"></i> Fire Station</span><span class="font-mono">(075) 555 0199</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                
             <!-- FOOTER -->
-            <footer class="border-t border-gray-200 bg-white py-4 text-center text-gray-400 text-sm mt-6">
+            <!-- <footer class="border-t border-gray-200 bg-white py-4 text-center text-gray-400 text-sm mt-6">
                 <div class="flex justify-between items-center px-6">
                     <span>Copyright © Barangay Polo 2026</span>
                     <div class="space-x-4"><a href="#" class="hover:text-gray-600">Privacy Policy</a><a href="#" class="hover:text-gray-600">Terms of Use</a></div>
                 </div>
-            </footer>
+            </footer> -->
         </div>
     </div>
 
@@ -410,7 +395,7 @@
                     throw new Error(data.error || 'Unable to submit your request.');
                 }
 
-                alert('✅ Request submitted successfully! Your request is now pending.');
+                alert('✅ Your certificate request has been sent. Please wait for admin approval.');
                 closePurposeModal();
 
                 if (confirm('Would you like to view your requests now?')) {
